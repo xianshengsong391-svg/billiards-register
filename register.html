@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>大金台球 - 扫码报名</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #060a18, #0c1230);
+      color: #ddd;
+      font-family: sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: #0f1530;
+      border: 2px solid #c07818;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 50px rgba(192,120,24,0.3);
+    }
+    .logo {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      color: #c07818;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 25px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    label {
+      display: block;
+      color: #888;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #2a2e50;
+      border-radius: 6px;
+      color: #ddd;
+      font-size: 16px;
+      outline: none;
+      font-family: inherit;
+    }
+    input[type="text"]:focus {
+      border-color: #c07818;
+    }
+    .gender-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .gender-btn {
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #2a2e50;
+      border-radius: 6px;
+      color: #888;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    .gender-btn.selected {
+      border-color: #c07818;
+      color: #c07818;
+      background: rgba(192,120,24,0.1);
+    }
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #c07818, #d4881f);
+      color: #060a18;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-family: inherit;
+      margin-top: 10px;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+    .message.success {
+      background: rgba(56,184,138,0.2);
+      color: #38b88a;
+      display: block;
+    }
+    .message.error {
+      background: rgba(231,76,60,0.2);
+      color: #e74c3c;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🎱</div>
+    <h1>大金台球</h1>
+    <div class="subtitle">扫码报名参赛</div>
+    
+    <div class="form-group">
+      <label>选手姓名</label>
+      <input type="text" id="playerName" placeholder="请输入姓名" maxlength="20">
+    </div>
+    
+    <div class="form-group">
+      <label>联系电话（选填）</label>
+      <input type="tel" id="playerPhone" placeholder="请输入手机号" maxlength="15">
+    </div>
+    
+    <div class="form-group">
+      <label>性别</label>
+      <div class="gender-buttons">
+        <button class="gender-btn selected" onclick="selectGender('男', this)">♂ 男</button>
+        <button class="gender-btn" onclick="selectGender('女', this)">♀ 女</button>
+      </div>
+    </div>
+    
+    <button class="submit-btn" onclick="submitForm()">提交报名</button>
+    
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    var selectedGender = '男';
+    var scriptURL = 'https://script.google.com/macros/s/AKfycbz4dIHwVw08HZWWqgiyAznrtD8DB9-ZT38ihcPqu4NRJOv7EniwE_DjWUOYmeis2ScjPw/exec';
+
+    function selectGender(gender, btn) {
+      selectedGender = gender;
+      document.querySelectorAll('.gender-btn').forEach(function(b) {
+        b.classList.remove('selected');
+      });
+      btn.classList.add('selected');
+    }
+
+    function submitForm() {
+      var name = document.getElementById('playerName').value.trim();
+      var phone = document.getElementById('playerPhone').value.trim();
+      
+      if (!name) {
+        showMessage('请输入姓名！', 'error');
+        return;
+      }
+
+      if (!scriptURL) {
+        showMessage('系统未配置，请联系管理员！', 'error');
+        return;
+      }
+
+      var btn = document.querySelector('.submit-btn');
+      btn.disabled = true;
+      btn.textContent = '提交中...';
+
+      var params = 'name=' + encodeURIComponent(name) + 
+                   '&gender=' + encodeURIComponent(selectedGender) + 
+                   '&phone=' + encodeURIComponent(phone);
+
+      fetch(scriptURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params
+      })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        if (data.status === 'success') {
+          showMessage('🎉 ' + data.message, 'success');
+          document.getElementById('playerName').value = '';
+          setTimeout(function() {
+            document.getElementById('message').className = 'message';
+          }, 3000);
+        } else {
+          showMessage('❌ ' + data.message, 'error');
+        }
+        btn.disabled = false;
+        btn.textContent = '提交报名';
+      })
+      .catch(function(err) {
+        showMessage('❌ 提交失败，请重试！', 'error');
+        btn.disabled = false;
+        btn.textContent = '提交报名';
+      });
+    }
+
+    function showMessage(text, type) {
+      var el = document.getElementById('message');
+      el.textContent = text;
+      el.className = 'message ' + type;
+    }
+  </script>
+</body>
+</html>
